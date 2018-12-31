@@ -1,0 +1,4 @@
+FROM apache:latest
+
+PORTS 80:80
+PORTS 443:443

@@ -1,0 +1,86 @@
+version: '3.7'
+
+services:
+
+  jrabbit-api-php:
+    image: 'php:latest'
+    restart: 'always'
+    volumes:
+      - php-data:
+    labels:
+      - com.jrabbit.description: 'jrabbit-api-php'
+    container_name: 'jrabbit-api-php'
+    depends_on:
+      - 'jrabbit-mysql-master'
+      - 'jrabbit-memcached'
+    networks:
+      - 'jrabbit-web'
+
+  jrabbit-mysql-master:
+    image: 'mysql:latest'
+    restart: 'always'
+    volumes:
+      - db-data:/var/lib/mysql/data 
+    labels:
+      - com.jrabbit.description: 'jrabbit-mysql-master'
+    container_name: 'jrabbit-mysql-master'
+    networks:
+      - 'jrabbit-web'
+      - 'jrabbit-internal'
+    expose:
+      - '3306'
+    # ports:
+    #   - '3306:3306'
+
+  jrabbit-memcached:
+    image: 'memcached:latest'
+    restart: 'always'
+    labels:
+      - com.jrabbit.description: 'jrabbit-memcached'
+    container_name: 'jrabbit-memcached'
+    expose:
+      - '11211'
+    networks:
+      - 'jrabbit-web'
+      - 'jrabbit-internal'
+    
+  jrabbit-api-apache:
+    image: 'httpd:latest'
+    restart: 'always' 
+    env_file:
+      - ./jrabbit.env
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - web-data:/usr/local/src/jrabbit
+    # TODO : Solve the problem - dependencies may not have started up before HTTPD Start Up
+    depends_on:
+      - 'jrabbit-api-php'
+      - 'jrabbit-mysql-master'
+    build:
+      # NOTE : The expression for context below evaluates to dev if $JRABBIT-ENV env variable is empty or not set
+      context: "./${JRABBIT-ENV:-dev}"
+      dockerfile: Dockerfile-apache
+    networks:
+      - 'jrabbit-web'
+    labels:
+      - com.jrabbit.description: "jrabbit-api-apache"
+    container_name: 'jrabbit-api-httpd'
+    # TODO : Optimize and enable Health Check Config below
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost"]
+    #   interval: 5m30s
+    #   timeout: 10s
+    #   retries: 3
+    #   start_period: 1m
+  volumes:
+    - db-data:
+    - php-data:
+    - web-data:
+# TODO : Work on networking to separate services onto internal and web facing networks
+# NOTE : Default network adapter here is bridge
+  networks:
+    jrabbit-web:
+    jrabbit-internal:
+ 
