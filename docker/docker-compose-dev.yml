@@ -2,25 +2,17 @@ version: '3.7'
 
 services:
 
-  jrabbit-api-php:
-    image: 'php:latest'
-    restart: 'always'
-    volumes:
-      - php-data:
-    labels:
-      - com.jrabbit.description: 'jrabbit-api-php'
-    container_name: 'jrabbit-api-php'
-    depends_on:
-      - 'jrabbit-mysql-master'
-      - 'jrabbit-memcached'
-    networks:
-      - 'jrabbit-web'
-
   jrabbit-mysql-master:
     image: 'mysql:latest'
     restart: 'always'
     volumes:
-      - db-data:/var/lib/mysql/data 
+      - db-data:/var/lib/mysql
+      - db-log:/var/log/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: Jr@bbit123$
+      MYSQL_DATABASE: jrabbit
+      MYSQL_USER: jrdev
+      MYSQL_PASSWORD: JrDe^123*
     labels:
       - com.jrabbit.description: 'jrabbit-mysql-master'
     container_name: 'jrabbit-mysql-master'
@@ -53,10 +45,10 @@ services:
       - '80:80'
       - '443:443'
     volumes:
-      - web-data:/usr/local/src/jrabbit
+    #  - web-data:/usr/local/src/jrabbit
+      - ../:/var/www/html
     # TODO : Solve the problem - dependencies may not have started up before HTTPD Start Up
     depends_on:
-      - 'jrabbit-api-php'
       - 'jrabbit-mysql-master'
     build:
       # NOTE : The expression for context below evaluates to dev if $JRABBIT-ENV env variable is empty or not set
@@ -76,11 +68,25 @@ services:
     #   start_period: 1m
   volumes:
     - db-data:
-    - php-data:
-    - web-data:
+    - db-log:
 # TODO : Work on networking to separate services onto internal and web facing networks
 # NOTE : Default network adapter here is bridge
   networks:
     jrabbit-web:
     jrabbit-internal:
- 
+
+#  jrabbit-api-php:
+#    image: 'php:latest'
+#    restart: 'always'
+#    volumes:
+#      - php-data:
+#    labels:
+#      - com.jrabbit.description: 'jrabbit-api-php'
+#    container_name: 'jrabbit-api-php'
+#    depends_on:
+#      - 'jrabbit-mysql-master'
+#      - 'jrabbit-memcached'
+#    networks:
+#      - 'jrabbit-web'
+
+
