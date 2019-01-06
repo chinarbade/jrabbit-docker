@@ -1,4 +1,4 @@
-FROM apache:latest
+FROM php:7.2-apache
 
 PORTS 80:80
 PORTS 443:443

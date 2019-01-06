@@ -1,18 +1,23 @@
+# Jackrabbit Dev Configuration
 version: '3.7'
 
 services:
 
   jrabbit-mysql-master:
-    image: 'mysql:latest'
+    image: 'jrabbit-mysql.local'
     restart: 'always'
     volumes:
       - db-data:/var/lib/mysql
       - db-log:/var/log/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: Jr@bbit123$
-      MYSQL_DATABASE: jrabbit
-      MYSQL_USER: jrdev
-      MYSQL_PASSWORD: JrDe^123*
+      MYSQL_ROOT_PASSWORD: 'Jr@bbit123$'
+      MYSQL_DATABASE: 'jrabbit'
+      MYSQL_USER: 'jrdev'
+      MYSQL_PASSWORD: 'JrDe^123*'
+    build:
+      # NOTE : The expression for context below evaluates to dev if $JRABBIT-ENV env variable is empty or not set
+      context: "./${JRABBIT-ENV:-dev}"
+      dockerfile: Dockerfile-mysql
     labels:
       - com.jrabbit.description: 'jrabbit-mysql-master'
     container_name: 'jrabbit-mysql-master'
@@ -25,11 +30,15 @@ services:
     #   - '3306:3306'
 
   jrabbit-memcached:
-    image: 'memcached:latest'
+    image: 'jrabbit-memcached.local'
     restart: 'always'
     labels:
       - com.jrabbit.description: 'jrabbit-memcached'
     container_name: 'jrabbit-memcached'
+    build:
+      # NOTE : The expression for context below evaluates to dev if $JRABBIT-ENV env variable is empty or not set
+      context: "./${JRABBIT-ENV:-dev}"
+      dockerfile: Dockerfile-memcached
     expose:
       - '11211'
     networks:
@@ -37,7 +46,7 @@ services:
       - 'jrabbit-internal'
     
   jrabbit-api-apache:
-    image: 'httpd:latest'
+    image: 'jrabbit-httpd.local'
     restart: 'always' 
     env_file:
       - ./jrabbit.env
@@ -46,7 +55,7 @@ services:
       - '443:443'
     volumes:
     #  - web-data:/usr/local/src/jrabbit
-      - ../:/var/www/html
+      - ../web:/var/www/html
     # TODO : Solve the problem - dependencies may not have started up before HTTPD Start Up
     depends_on:
       - 'jrabbit-mysql-master'
@@ -74,19 +83,4 @@ services:
   networks:
     jrabbit-web:
     jrabbit-internal:
-
-#  jrabbit-api-php:
-#    image: 'php:latest'
-#    restart: 'always'
-#    volumes:
-#      - php-data:
-#    labels:
-#      - com.jrabbit.description: 'jrabbit-api-php'
-#    container_name: 'jrabbit-api-php'
-#    depends_on:
-#      - 'jrabbit-mysql-master'
-#      - 'jrabbit-memcached'
-#    networks:
-#      - 'jrabbit-web'
-
 

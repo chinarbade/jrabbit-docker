@@ -19,8 +19,9 @@ echo '<p><b>Demo Site Map<b><br>'.
 	'<br><a href="modules/user">User Module</a><br>'.
 	'<br><a href="modules/video">Video Module</a><br>'.
 	'<br><a href="modules/video_chat">Video Chat Module</a><br>'.
-	//'<br><a href=""></a><br>'.
-	//'<br><a href=""></a><br>'.
+	'<br><a href="tools/db_test.php">MySQL Test</a><br>'.
+	'<br><a href="tools/memcached_test.php">Memcached Test</a><br>'.
+	'<br><a href="tools/phpinfo.php">PHP Info</a><br>'
 	//'<br><a href=""></a><br>'.
 	//'<br><a href=""></a><br>'.
 	//'<br><a href=""></a><br>'.
